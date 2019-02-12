@@ -204,7 +204,7 @@ func MakeCsvFromScratch(total []MegaStruct, interval int) {
 				}
 
 				aaplC, sberC, amznC = DefaultOutput(aaplC), DefaultOutput(sberC), DefaultOutput(amznC)
-				isTime = true
+				isTime = false
 
 			} else {
 				if total[i].Company == "AAPL" {
@@ -220,7 +220,108 @@ func MakeCsvFromScratch(total []MegaStruct, interval int) {
 		}
 
 	} else {
-		fmt.Println("KEEEEEEEEEEEEEEEEEEEEEEEEK")
+		interval = interval / 60
+		check := total[0]
+
+		for i := range total {
+			if isTime == false {
+				startTime = total[i].TimeStamp
+				isTime = true
+			} //TODO make nice code
+
+			//aapl part
+			if total[i].Company == "AAPL" {
+				if aaplC.checkMe == false {
+					aaplC.Company = "AAPL"
+					aaplC.TimeStamp = startTime.Add(-time.Second).Format(time.RFC3339)
+					aaplC.checkMe = true
+					aaplC.openPrice = total[i].PriceOpen
+
+				}
+				if aaplC.lowPrice > total[i].PriceOpen {
+					aaplC.lowPrice = total[i].PriceOpen
+				}
+
+				if aaplC.highPrice < total[i].PriceOpen {
+					aaplC.highPrice = total[i].PriceOpen
+				}
+
+			}
+			//sber part
+			if total[i].Company == "SBER" {
+				if sberC.checkMe == false {
+					sberC.Company = "SBER"
+					sberC.TimeStamp = startTime.Add(-time.Second).Format(time.RFC3339)
+					sberC.checkMe = true
+					sberC.openPrice = total[i].PriceOpen
+
+				}
+				if sberC.lowPrice > total[i].PriceOpen {
+					sberC.lowPrice = total[i].PriceOpen
+				}
+
+				if sberC.highPrice < total[i].PriceOpen {
+					sberC.highPrice = total[i].PriceOpen
+				}
+
+			}
+			//amzn part
+			if total[i].Company == "AMZN" {
+				if amznC.checkMe == false {
+					amznC.Company = "AMZN"
+					amznC.TimeStamp = startTime.Add(-time.Second).Format(time.RFC3339)
+					amznC.checkMe = true
+					amznC.openPrice = total[i].PriceOpen
+
+				}
+				if amznC.lowPrice > total[i].PriceOpen {
+					amznC.lowPrice = total[i].PriceOpen
+				}
+
+				if amznC.highPrice < total[i].PriceOpen {
+					amznC.highPrice = total[i].PriceOpen
+				}
+
+			}
+
+			//writer
+			if i == 0 {
+				continue
+			}
+			if total[i].TimeStamp.Hour()-check.TimeStamp.Hour() == interval || total[i].TimeStamp.Day() > total[i-1].TimeStamp.Day() {
+
+				check = total[i]
+				if aaplC.closePrice*aaplC.openPrice > 0 {
+					obj := ConvertStrToString(aaplC)
+					writer.Write(obj)
+					//aaplC = DefaultOutput(aaplC)
+				}
+				if sberC.closePrice*sberC.openPrice > 0 {
+					obj := ConvertStrToString(sberC)
+					writer.Write(obj)
+					//aaplC = DefaultOutput(aaplC)
+				}
+				if amznC.closePrice*amznC.openPrice > 0 {
+					obj := ConvertStrToString(amznC)
+					writer.Write(obj)
+					//aaplC = DefaultOutput(aaplC)
+				}
+
+				aaplC, sberC, amznC = DefaultOutput(aaplC), DefaultOutput(sberC), DefaultOutput(amznC)
+				isTime = false
+
+			} else {
+				if total[i].Company == "AAPL" {
+					aaplC.closePrice = total[i].PriceOpen
+				}
+				if total[i].Company == "SBER" {
+					sberC.closePrice = total[i].PriceOpen
+				}
+				if total[i].Company == "AMZN" {
+					amznC.closePrice = total[i].PriceOpen
+				}
+			}
+		}
 
 	}
 }
@@ -228,5 +329,7 @@ func MakeCsvFromScratch(total []MegaStruct, interval int) {
 func main() {
 
 	MakeCsvFromScratch(Filer("trades.csv", 7, 23), 5)
+	MakeCsvFromScratch(Filer("trades.csv", 7, 23), 30)
+	MakeCsvFromScratch(Filer("trades.csv", 7, 23), 240)
 
 }
