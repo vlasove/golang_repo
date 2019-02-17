@@ -9,4 +9,4 @@ func main() {
 
 	fmt.Println("Welcome to Go!")
 	fmt.Println("The time is: ", time.Now())
-}
+	fmt.Println("Some code")
