@@ -4,7 +4,9 @@ import (
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
+	"log"
 	"os"
+	"sort"
 	"time"
 )
 
@@ -17,61 +19,77 @@ type News struct {
 	Ticker      []string  `json:"tickers"`
 }
 
-//1 func --- from json to byteValue  TODO
-//2 func --- from byteValue to []News TODO
-//3 func --- form non grouped []News to grouped []News
-//4 func --- sort grouped []News by time and Grouping
-//5 func --- from grouped and sorted []News to json
+//1 func --- from json to byteValue  TODO ----- done
+//2 func --- from byteValue to []News TODO ----- done
+//3 func --- from unsorted []News to sortedByTime []News TODO ----- done
+//4 func --- from []News get newsByIndexes func TODO  ---- done
+//5 func ---- groupNews TODO
+//6 func --- sortByPriority TODO
+//7 func ---- from sorted slice []News to .json file TODO
+//8 check ---- check lang style TODO
 
-func openJson(path string) []byte {
-	jsonFile, errOpen := os.Open(path)
+func openJson(path string) ([]byte, error) {
+	jsonFile, err := os.Open(path)
 	defer jsonFile.Close()
 	// if we os.Open returns an error then handle it
-	if errOpen != nil {
-		fmt.Println(errOpen)
+	if err != nil {
+		return nil, fmt.Errorf("can't open file: %s \nmessage : %s", path, err)
 	}
-	fmt.Printf("Successfully Opened %v \n", path)
-	byteValue, errRead := ioutil.ReadAll(jsonFile)
-	if errRead != nil {
-		fmt.Println(errRead)
+	byteValue, err := ioutil.ReadAll(jsonFile)
+	if err != nil {
+		return nil, fmt.Errorf("can't read (.ReadAll) from json : %s \nmessage : %s", path, err)
 	}
-	return byteValue
+	return byteValue, nil
 
 }
 
-func byteUnmarsh(valByte []byte) []News {
+func byteUnmarshal(valByte []byte) ([]News, error) {
 	var news []News
-	json.Unmarshal(valByte, &news)
-	return news
+	err := json.Unmarshal(valByte, &news)
+	if err != nil {
+		return nil, fmt.Errorf("can't unmarshal file : %s", err)
+	}
+
+	return news, err
 }
+
+func newsSort(news []News) {
+	sort.SliceStable(news, func(i, j int) bool {
+		return news[i].PublushTime.Before(news[j].PublushTime)
+	})
+
+}
+
+func getNewsByIndexes(indexes []int, news []News) []News {
+	newsByIndexes := make([]News, 0)
+	for _, val := range indexes {
+		newsByIndexes = append(newsByIndexes, news[val])
+	}
+
+	return newsByIndexes
+}
+
+func groupNews(news []News) {}
 
 func main() {
 
-	// Open our jsonFile
-	///jsonFile, err := os.Open("news.json")
-	///defer jsonFile.Close()
-	// if we os.Open returns an error then handle it
-	///if err != nil {
-	///		fmt.Println(err)
-	///	}
-	///fmt.Println("Successfully Opened news.json")
-	///byteValue, _ := ioutil.ReadAll(jsonFile)
-	// defer the closing of our jsonFile so that we can parse it later on
+	byteValue, err := openJson("news.json")
+	if err != nil {
+		log.Fatal("can't execute openJson func : ", err)
+	}
+	news, err := byteUnmarshal(byteValue)
+	if err != nil {
+		log.Fatal("can't unmarshal json after openJson func execution : ", err)
+	}
 
-	byteValue := openJson("news.json")
-	//birdJson := `[{"species" : "pigeon" , "decription" : "asdkASDlikes to perch on rocks"},{"species":"eagle","description":"bird of prey"}]`
-	///var news []News
-	///json.Unmarshal(byteValue, &news)
-	news := byteUnmarsh(byteValue)
+	newsSort(news)
+	//done by this point
+
 	for i, v := range news {
 		fmt.Println("==============================================NEWS==========================================================")
-		fmt.Printf("Id : %v  \n Title : %v \n", v.Id, v.Title)
-		fmt.Printf("Body: \n %v\n", v.Body)
 		fmt.Printf("Published at %v\nProvider is %v\nTickers are %+v\n", v.PublushTime, v.Provider, v.Ticker)
 		fmt.Printf("News #%v\n", i)
 
-		if i > 10 {
-			break
-		}
 	}
+
 }
