@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"log"
 	"os"
+	"time"
 )
 
 var path = flag.String("file", "trades.csv", "Path to .csv file")
@@ -30,12 +31,6 @@ func firstStage(path *string) <-chan string {
 
 }
 
-
-
-func fetchTrades(in <-chan string) []<-chan string, <-chan error{
-	
-}
-
 func main() {
 	flag.Parse()
 	file, err := os.Open(*path)
@@ -43,6 +38,8 @@ func main() {
 	if err != nil {
 		log.Fatal(err)
 	}
+
+	t := time.Now()
 
 	scanner := bufio.NewScanner(file)
 	in := make(chan string)
@@ -54,6 +51,7 @@ func main() {
 		close(in)
 	}()
 
-	fetchTrades(in chan<- string) []
+	fmt.Println(t.Truncate(240 * time.Minute))
+	fmt.Println(t.Add(-180 * time.Minute).Truncate(240 * time.Minute).Add(180 * time.Minute))
 
 }
