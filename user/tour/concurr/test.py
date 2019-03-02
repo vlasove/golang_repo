@@ -3,16 +3,20 @@ a=float(input("Enter a: "))
 b=float(input("Enter b: "))
 c=float(input("Enter c: "))
 
-if a==0 and b!=0 and c==0:
+if a==0 and b!=0:
     x=-c/b
     print("x= %0.1f"%(x))
 elif a==0 and b==0:
     print('Пустое множество')
 elif a!=0 and b==0:
-    x1=c**0.5
-    x2=-(c**0.5)
-    print("x1= %0.1f"%(x1))
-    print("x2= %0.1f"%(x2))
+    if c<0:
+        x1=(-c/a)**0.5
+        x2=-(-c/a)**0.5
+        print("x1= %0.1f"%(x1))
+        print("x2= %0.1f"%(x2))
+    else:
+        print ('Нет действительных корней')
+    
 elif a!=0 and b!=0:
     d1=(b*b)-(4*a*c)
     if d1>0:
